@@ -1,4 +1,6 @@
-import sys, requests
+import re
+import sys
+import requests
 from bs4 import BeautifulSoup
 from .constants import URL_TEACHERS
 from .utils import unique_by_key
@@ -54,19 +56,39 @@ def fetch_teachers_info():
 def find_teachers_full_names(teachers_info):
     soup = BeautifulSoup(teachers_info, 'html.parser')
     fio_tags = soup.find_all('td', itemprop='fio')
-    return [tag.text for tag in fio_tags]
+    if fio_tags:
+        return [tag.text for tag in fio_tags]
+    # Fallback: extract from raw HTML
+    return re.findall(r'[А-Я][а-я]{2,}\s+[А-Я][а-я]+\s+[А-Я][а-я]+', teachers_info)
+
+
+def _normalize_schedule_name(name):
+    parts = re.split(r'[\s.]+', name)
+    parts = [p for p in parts if p]
+    if len(parts) >= 3:
+        return (parts[0] + parts[1][0] + parts[2][0]).upper()
+    elif len(parts) == 2:
+        return (parts[0] + parts[1][0]).upper()
+    return name.upper()
+
+
+def _normalize_website_name(name):
+    parts = name.split()
+    if len(parts) >= 3:
+        return (parts[0] + parts[1][0] + parts[2][0]).upper()
+    elif len(parts) == 2:
+        return (parts[0] + parts[1][0]).upper()
+    return name.upper()
 
 
 def match_teachers_names(short_names, full_names):
+    short_norm = {_normalize_schedule_name(n): n for n in short_names}
+    full_norm = {_normalize_website_name(n): n for n in full_names}
+
     teachers = {}
-    for teacher in short_names:
-        first_name = teacher.split()[0]
-        found = False
-        for full_name in full_names:
-            if first_name == full_name.split()[0]:
-                teachers[teacher] = full_name
-                found = True
-                break
-        if not found:
-            teachers[teacher] = teacher
+    for norm, short in short_norm.items():
+        if norm in full_norm:
+            teachers[short] = full_norm[norm]
+        else:
+            teachers[short] = short
     return teachers

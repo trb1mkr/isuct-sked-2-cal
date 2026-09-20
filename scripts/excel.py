@@ -85,16 +85,16 @@ def fill_lessons_sheet(workbook, schedule):
             for cell_row in subject_cell_rows:
                 if audiences_sheet[f'B{cell_row}'].value == lesson['subject']:
                     audiences.add(cell_row)
-        audiences_str = " & ".join(f"Audiences!A{audience}" for audience in audiences)
+        audiences_str = ' & ", " & '.join(f"Audiences!A{audience}" for audience in audiences)
         lessons_sheet[f'G{row}'] = f'=IF(G2=TRUE, IFERROR({audiences_str}, ""), "")'
 
         teachers = set()
         for teacher in lesson['teachers']:
             teacher_cell_row = find_row_by_value(teachers_sheet, 'A', teacher['name'])[0]
             teachers.add(teacher_cell_row)
-        teachers_fio_short_str = " & ".join(f"Teachers!A{teacher}" for teacher in teachers)
-        teachers_fio_str = " & ".join(f"Teachers!B{teacher}" for teacher in teachers)
-        teachers_nickname_str = " & ".join(f"Teachers!C{teacher}" for teacher in teachers)
+        teachers_fio_short_str = ' & ", " & '.join(f"Teachers!A{teacher}" for teacher in teachers)
+        teachers_fio_str = ' & ", " & '.join(f"Teachers!B{teacher}" for teacher in teachers)
+        teachers_nickname_str = ' & ", " & '.join(f"Teachers!C{teacher}" for teacher in teachers)
         lessons_sheet[f'H{row}'] = f'=IF(H2=TRUE, IFERROR({teachers_fio_short_str}, ""), "")'
         lessons_sheet[f'I{row}'] = f'=IF(I2=TRUE, IFERROR({teachers_fio_str}, ""), "")'
         lessons_sheet[f'J{row}'] = f'=IF(J2=TRUE, IF((IFERROR({teachers_nickname_str}, ""))="", "", (IFERROR({teachers_nickname_str}, ""))), "")'
