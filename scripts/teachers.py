@@ -1,12 +1,13 @@
 import sys, requests
 from bs4 import BeautifulSoup
 from .constants import URL_TEACHERS
+from .utils import unique_by_key
 
 
 def add_teachers_full_names(schedule):
     print("Загружаем список преподавателей ИГХТУ и ищем полные ФИО...")
     
-    short_names = list(get_uniq_teachers_names(schedule))
+    short_names = get_uniq_teacher_names(schedule)
     full_names = find_teachers_full_names(fetch_teachers_info())
     names_dict = match_teachers_names(short_names, full_names)
 
@@ -20,21 +21,18 @@ def add_teachers_full_names(schedule):
     return schedule
 
 
-def get_uniq_teachers_names(schedule):
-    teachers = set()
-    for lesson in schedule:
-        for teacher in lesson['teachers']:
-            teachers.add(teacher['name'])
-    return teachers
+def get_uniq_teacher_names(schedule):
+    return unique_by_key(
+        (teacher['name'] for lesson in schedule for teacher in lesson['teachers']),
+        key_fn=lambda x: x
+    )
 
 
 def get_uniq_teachers(schedule):
-    teachers = list()
-    for lesson in schedule:
-        for teacher in lesson['teachers']:
-            if not any(teacher['name'] == curr_teacher.get("name") for curr_teacher in teachers):
-                teachers.append(teacher)
-    return teachers
+    return unique_by_key(
+        (teacher for lesson in schedule for teacher in lesson['teachers']),
+        key_fn=lambda t: t['name']
+    )
 
 
 def fetch_teachers_info():
