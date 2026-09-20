@@ -20,7 +20,15 @@ def create_workbook(schedule):
     fill_lessons_sheet(workbook, schedule)
 
     output_file_path = 'output/schedule.xlsx'
-    workbook.save(output_file_path)
+    while True:
+        try:
+            workbook.save(output_file_path)
+            break
+        except PermissionError:
+            print(f"Файл {output_file_path} открыт. Для заполнения расписания закройте файл и повторите попытку.")
+            retry = input("Повторить попытку записи? (Y/n): ").strip().lower()
+            if retry == 'n':
+                raise
     
     print("Расписание успешно создано и сохранено в output/schedule.xlsx")
 
@@ -77,15 +85,19 @@ def fill_lessons_sheet(workbook, schedule):
             for cell_row in subject_cell_rows:
                 if audiences_sheet[f'B{cell_row}'].value == lesson['subject']:
                     audiences.add(cell_row)
-        lessons_sheet[f'G{row}'] = f'=IF(G2=TRUE, IFERROR({"&" "&".join(f"Audiences!A{audience}" for audience in audiences)}, ""), "")'
+        audiences_str = " & ".join(f"Audiences!A{audience}" for audience in audiences)
+        lessons_sheet[f'G{row}'] = f'=IF(G2=TRUE, IFERROR({audiences_str}, ""), "")'
 
         teachers = set()
         for teacher in lesson['teachers']:
             teacher_cell_row = find_row_by_value(teachers_sheet, 'A', teacher['name'])[0]
             teachers.add(teacher_cell_row)
-        lessons_sheet[f'H{row}'] = f'=IF(H2=TRUE, IFERROR({"&" "&".join(f"Teachers!A{teacher}" for teacher in teachers)}, ""), "")'
-        lessons_sheet[f'I{row}'] = f'=IF(I2=TRUE, IFERROR({"&" "&".join(f"Teachers!B{teacher}" for teacher in teachers)}, ""), "")'
-        lessons_sheet[f'J{row}'] = f'=IF(J2=TRUE, IF((IFERROR({"&" "&".join(f"Teachers!C{teacher}" for teacher in teachers)}, ""))="", "", (IFERROR({"&" "&".join(f"Teachers!C{teacher}" for teacher in teachers)}, ""))), "")'
+        teachers_fio_short_str = " & ".join(f"Teachers!A{teacher}" for teacher in teachers)
+        teachers_fio_str = " & ".join(f"Teachers!B{teacher}" for teacher in teachers)
+        teachers_nickname_str = " & ".join(f"Teachers!C{teacher}" for teacher in teachers)
+        lessons_sheet[f'H{row}'] = f'=IF(H2=TRUE, IFERROR({teachers_fio_short_str}, ""), "")'
+        lessons_sheet[f'I{row}'] = f'=IF(I2=TRUE, IFERROR({teachers_fio_str}, ""), "")'
+        lessons_sheet[f'J{row}'] = f'=IF(J2=TRUE, IF((IFERROR({teachers_nickname_str}, ""))="", "", (IFERROR({teachers_nickname_str}, ""))), "")'
 
         lessons_sheet[f'K{row}'] = f'=IF(K2=TRUE, "{lesson['type']}", "")'
         lessons_sheet[f'L{row}'] = '=IF(L2=TRUE, "Оффлайн", "")' 

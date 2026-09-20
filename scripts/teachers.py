@@ -1,6 +1,6 @@
-import os, sys, requests
-from dotenv import load_dotenv
+import sys, requests
 from bs4 import BeautifulSoup
+from .constants import URL_TEACHERS
 
 
 def add_teachers_full_names(schedule):
@@ -38,8 +38,7 @@ def get_uniq_teachers(schedule):
 
 
 def fetch_teachers_info():
-    load_dotenv()
-    url = os.getenv('URL_TEACHERS')
+    url = URL_TEACHERS
     
     try:
         response = requests.get(url)

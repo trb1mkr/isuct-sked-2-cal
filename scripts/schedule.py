@@ -1,5 +1,5 @@
-import os, re, sys, requests
-from dotenv import load_dotenv
+import re, sys, requests
+from .constants import URL_SCHEDULE
 
 
 def get_schedule(group):
@@ -8,8 +8,7 @@ def get_schedule(group):
 
 
 def fetch_university_schedule():
-    load_dotenv()
-    url = os.getenv('URL_SCHEDULE')
+    url = URL_SCHEDULE
     
     try:
         response = requests.get(url)

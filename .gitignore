@@ -17,3 +17,6 @@ __pycache__/
 
 # Temp
 ~*
+
+# editable install
+*.egg-info/

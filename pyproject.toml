@@ -11,3 +11,6 @@ dependencies = [
     "python-dotenv>=1.1.0",
     "requests>=2.32.3",
 ]
+
+[tool.setuptools.packages.find]
+exclude = ["assets*", "output*"]
