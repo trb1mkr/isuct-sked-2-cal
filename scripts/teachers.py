@@ -1,9 +1,9 @@
 import re
-import sys
 import requests
 from bs4 import BeautifulSoup
 from .constants import URL_TEACHERS
 from .utils import unique_by_key
+from .exceptions import TeachersFetchError
 
 
 def add_teachers_full_names(schedule):
@@ -46,11 +46,9 @@ def fetch_teachers_info():
         return response.text
         
     except requests.exceptions.HTTPError as e:
-        print(f"HTTP ошибка: {e}")
-        sys.exit(1)
+        raise TeachersFetchError(f"HTTP ошибка: {e}") from e
     except requests.exceptions.RequestException as e:
-        print(f"Ошибка: {e}")
-        sys.exit(1)
+        raise TeachersFetchError(f"Ошибка запроса: {e}") from e
 
 
 def find_teachers_full_names(teachers_info):

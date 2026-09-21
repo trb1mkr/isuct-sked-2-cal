@@ -1,5 +1,6 @@
-import re, sys, requests
+import re, requests
 from .constants import URL_SCHEDULE
+from .exceptions import ScheduleFetchError, ScheduleParseError, GroupNotFoundError
 
 
 def get_schedule(group):
@@ -17,21 +18,17 @@ def fetch_university_schedule():
         data = response.json()
 
         if not data:
-            print("Ошибка: загруженный JSON пуст")
-            sys.exit(1)
+            raise ScheduleParseError("загруженный JSON пуст")
         
         print("Расписание успешно загружено")
         return data
         
     except requests.exceptions.HTTPError as e:
-        print(f"HTTP ошибка: {e}")
-        sys.exit(1)
+        raise ScheduleFetchError(f"HTTP ошибка: {e}") from e
     except requests.exceptions.RequestException as e:
-        print(f"Ошибка: {e}")
-        sys.exit(1)
+        raise ScheduleFetchError(f"Ошибка запроса: {e}") from e
     except ValueError as e:
-        print(f"Ошибка при обработке JSON: {e}")
-        sys.exit(1)
+        raise ScheduleParseError(f"Ошибка при обработке JSON: {e}") from e
 
 
 def get_group_schedule(schedule, group):
@@ -39,4 +36,4 @@ def get_group_schedule(schedule, group):
         for grp in faculty['groups']:
             if re.sub("[^0-9]", "", grp['name']) == re.sub("[^0-9]", "", group):
                 return grp['lessons']
-    raise ValueError(f"Группа {group} не найдена в расписании")
+    raise GroupNotFoundError(f"Группа {group} не найдена в расписании")
